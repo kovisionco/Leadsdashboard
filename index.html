@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lead HQ — Cold Calling Dashboard</title>
+<style>
+#pw-gate{position:fixed;inset:0;z-index:9999;background:#0f172a;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+#pw-gate h1{color:#f8fafc;font-size:22px;font-weight:800;letter-spacing:1px;}
+#pw-gate span{color:#818cf8;}
+#pw-gate input{width:260px;padding:12px 16px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#f1f5f9;font-size:16px;outline:none;text-align:center;letter-spacing:2px;}
+#pw-gate input:focus{border-color:#818cf8;}
+#pw-gate button{width:260px;padding:12px;border-radius:10px;background:#818cf8;color:#fff;font-weight:700;font-size:15px;border:none;cursor:pointer;}
+#pw-gate button:hover{background:#6366f1;}
+#pw-err{color:#f87171;font-size:13px;height:16px;}
+</style>
+<script>
+(function(){
+  var PW='kovision2026';
+  if(sessionStorage.getItem('kv_auth')==='1'){return;}
+  document.addEventListener('DOMContentLoaded',function(){
+    var gate=document.getElementById('pw-gate');
+    var inp=document.getElementById('pw-input');
+    var err=document.getElementById('pw-err');
+    function tryLogin(){
+      if(inp.value===PW){sessionStorage.setItem('kv_auth','1');gate.style.display='none';}
+      else{err.textContent='Mot de passe incorrect.';inp.value='';inp.focus();}
+    }
+    document.getElementById('pw-btn').addEventListener('click',tryLogin);
+    inp.addEventListener('keydown',function(e){if(e.key==='Enter')tryLogin();});
+  });
+})();
+</script>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; display: flex; min-height: 100vh;  background: #f1f5f9; color: #0f172a; }
+
+/* SIDEBAR */
+.sidebar { width: 232px; min-width: 232px; background: #1e293b; display: flex; flex-direction: column; min-height: 100vh; overflow-y: auto; }
+.sb-header { padding: 18px 14px 14px; border-bottom: 1px solid #334155; }
+.sb-logo { font-size: 17px; font-weight: 800; color: #f8fafc; letter-spacing: 1px; }
+.sb-logo span { color: #818cf8; }
+.sb-date { font-size: 11px; color: #64748b; margin-top: 3px; }
+.sb-stats { display: flex; gap: 5px; margin-top: 10px; }
+.stat-chip { background: #334155; border-radius: 6px; padding: 5px 5px; font-size: 10px; color: #94a3b8; display: flex; flex-direction: column; align-items: center; flex: 1; }
+.stat-chip strong { font-size: 14px; color: #f1f5f9; font-weight: 700; line-height: 1.2; }
+.sb-section { padding: 10px 14px 4px; }
+.sb-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #475569; text-transform: uppercase; margin-bottom: 3px; }
+
+/* VIEW TOGGLE */
+.view-toggle { display: flex; gap: 4px; padding: 10px 14px 6px; }
+.vtab { flex: 1; text-align: center; padding: 6px 4px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; color: #64748b; background: #334155; transition: all 0.15s; }
+.vtab:hover { color: #e2e8f0; }
+.vtab.active { background: #6366f1; color: white; }
+
+.nav-item { display: flex; align-items: center; padding: 8px 10px; border-radius: 7px; cursor: pointer; color: #94a3b8; font-size: 13px; margin: 1px 0; gap: 7px; transition: background 0.12s; }
+.nav-item:hover { background: #334155; color: #e2e8f0; }
+.nav-item.active { background: #334155; color: #f8fafc; font-weight: 600; }
+.nav-item .icon { font-size: 14px; width: 18px; text-align: center; }
+.nav-item .lbl { flex: 1; }
+.nav-item .cnt { background: #1e293b; color: #64748b; border-radius: 9px; padding: 1px 6px; font-size: 11px; font-weight: 600; }
+.nav-item.active .cnt { background: #6366f1; color: white; }
+.filter-btn { display: flex; align-items: center; gap: 7px; padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; color: #94a3b8; transition: background 0.12s; }
+.filter-btn:hover { background: #334155; color: #e2e8f0; }
+.filter-btn.active { background: #334155; color: #f8fafc; font-weight: 600; }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+/* MAIN */
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.topbar { background: white; border-bottom: 1px solid #e2e8f0; padding: 11px 18px; display: flex; align-items: center; gap: 10px; }
+.topbar-title { font-size: 15px; font-weight: 700; flex: 1; }
+.topbar-sub { font-size: 12px; color: #64748b; font-weight: 400; margin-left: 8px; }
+.search-wrap { position: relative; }
+.search-ico { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 13px; pointer-events: none; }
+.search-input { border: 1px solid #e2e8f0; border-radius: 8px; padding: 7px 10px 7px 30px; font-size: 13px; width: 210px; outline: none; background: #f8fafc; color: #0f172a; }
+.search-input:focus { border-color: #6366f1; background: white; }
+.content { flex: 1;  padding: 14px 18px; }
+
+/* PRIORITY */
+.priority-section { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 11px 14px; margin-bottom: 14px; }
+.priority-header { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+.priority-header h3 { font-size: 12px; font-weight: 700; color: #92400e; }
+.priority-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.p-chip { background: white; border: 1px solid #fdba74; border-radius: 6px; padding: 4px 9px; font-size: 11px; color: #78350f; cursor: pointer; }
+.p-chip:hover { background: #fff7ed; border-color: #f97316; }
+.p-chip strong { color: #1e293b; }
+
+/* SECTION */
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.section-title { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+.cnt-badge { background: #e2e8f0; color: #64748b; border-radius: 9px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+
+/* LEADS GRID */
+.leads-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 9px; margin-bottom: 20px; }
+
+/* LEAD CARD */
+.lead-card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 13px; cursor: pointer; transition: box-shadow 0.12s, transform 0.1s; }
+.lead-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-1px); }
+.lead-card.hot { border-color: #fed7aa; background: #fffbf5; }
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+.card-agency { font-size: 13px; font-weight: 700; flex: 1; margin-right: 6px; line-height: 1.3; }
+.badges { display: flex; flex-direction: column; gap: 3px; align-items: flex-end; }
+.badge { border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+.b-int { background: #dcfce7; color: #16a34a; }
+.b-fol { background: #fef3c7; color: #d97706; }
+.b-dead { background: #fee2e2; color: #dc2626; }
+.b-niche { background: #f1f5f9; color: #64748b; }
+.b-now { background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; }
+.card-meta { font-size: 11px; color: #64748b; margin-bottom: 7px; display: flex; gap: 10px; flex-wrap: wrap; }
+.next-box { background: #f8fafc; border-left: 3px solid #6366f1; border-radius: 0 6px 6px 0; padding: 5px 9px; font-size: 12px; color: #0f172a; margin-bottom: 9px; line-height: 1.4; }
+.card-actions { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+.num-display { font-size: 11px; font-family: monospace; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 5px; padding: 4px 8px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.btn { display: flex; align-items: center; gap: 3px; border: 1px solid #e2e8f0; background: white; border-radius: 6px; padding: 4px 9px; font-size: 11px; font-weight: 500; color: #374151; cursor: pointer; text-decoration: none; transition: all 0.12s; white-space: nowrap; }
+.btn:hover { border-color: #6366f1; color: #6366f1; background: #eef2ff; }
+.btn.wa { border-color: #bbf7d0; color: #16a34a; }
+.btn.wa:hover { background: #dcfce7; }
+.btn.copied { border-color: #4ade80; color: #16a34a; background: #dcfce7; }
+.btn.expand { margin-left: auto; }
+.no-num { font-size: 11px; color: #94a3b8; font-style: italic; padding: 4px 0; }
+.expanded { display: none; margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 10px; }
+.expanded.show { display: block; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px; }
+.d-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; }
+.d-val { font-size: 12px; color: #0f172a; font-weight: 500; }
+.ws-box { background: #fefce8; border: 1px solid #fde68a; border-radius: 6px; padding: 7px 9px; font-size: 11px; color: #78350f; margin-bottom: 7px; line-height: 1.5; }
+.ws-box b { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #92400e; margin-bottom: 2px; }
+.pitch-box { background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 6px; padding: 7px 9px; font-size: 11px; color: #3730a3; margin-bottom: 7px; line-height: 1.5; }
+.pitch-box b { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #4338ca; margin-bottom: 2px; }
+.notes-box { background: #f8fafc; border-radius: 6px; padding: 7px 9px; font-size: 11px; color: #64748b; line-height: 1.5; }
+.notes-box b { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #374151; margin-bottom: 2px; }
+
+/* ── TASKS VIEW ────────────────────────────────────── */
+.tasks-view { padding-bottom: 30px; }
+
+/* Progress card */
+.progress-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; }
+.progress-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.progress-title { font-size: 14px; font-weight: 700; color: #0f172a; }
+.progress-count { font-size: 13px; font-weight: 700; color: #6366f1; }
+.progress-bar-wrap { background: #f1f5f9; border-radius: 99px; height: 8px; overflow: hidden; margin-bottom: 12px; }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #818cf8); border-radius: 99px; transition: width 0.4s ease; }
+.progress-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.prog-pill { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 20px; padding: 3px 10px; font-size: 11px; color: #64748b; font-weight: 500; }
+.prog-pill span { font-weight: 700; }
+
+/* Task group */
+.task-group { margin-bottom: 18px; }
+.tg-header { display: flex; align-items: center; gap: 8px; padding: 7px 0 7px; border-bottom: 1px solid #e2e8f0; margin-bottom: 6px; cursor: pointer; user-select: none; }
+.tg-header:hover .tg-label { color: #0f172a; }
+.tg-icon { font-size: 16px; }
+.tg-label { font-size: 13px; font-weight: 700; color: #374151; flex: 1; }
+.tg-cnt { background: #e2e8f0; color: #64748b; border-radius: 9px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+.tg-done-cnt { font-size: 11px; color: #94a3b8; }
+.tg-toggle { font-size: 11px; color: #94a3b8; margin-left: 4px; }
+.tg-body { }
+.tg-body.collapsed { display: none; }
+
+/* Task row */
+.task-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; background: white; border: 1px solid #e2e8f0; margin-bottom: 5px; transition: border-color 0.12s; }
+.task-row.done { opacity: 0.45; }
+.task-row.done .task-agency { text-decoration: line-through; color: #94a3b8; }
+.task-row:hover { border-color: #c7d2fe; }
+.task-row.is-priority { border-color: #fed7aa; background: #fffbf5; }
+.task-row.is-priority:hover { border-color: #f97316; }
+
+/* Checkbox */
+.task-cb { width: 17px; height: 17px; min-width: 17px; border: 2px solid #cbd5e1; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.12s; background: white; }
+.task-cb.checked { background: #6366f1; border-color: #6366f1; }
+.task-cb.checked::after { content: '✓'; color: white; font-size: 11px; font-weight: 700; }
+.task-row.is-priority .task-cb { border-color: #f97316; }
+.task-row.is-priority .task-cb.checked { background: #f97316; border-color: #f97316; }
+
+.task-info { flex: 1; min-width: 0; }
+.task-agency { font-size: 12px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.task-agency .pri-tag { font-size: 10px; background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; border-radius: 3px; padding: 0 4px; margin-right: 4px; font-weight: 700; }
+.task-action { font-size: 11px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+.task-btns { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+.tbtn { display: flex; align-items: center; gap: 2px; border: 1px solid #e2e8f0; background: white; border-radius: 5px; padding: 3px 7px; font-size: 11px; color: #374151; cursor: pointer; text-decoration: none; transition: all 0.12s; white-space: nowrap; }
+.tbtn:hover { border-color: #6366f1; color: #6366f1; background: #eef2ff; }
+.tbtn.wa { border-color: #bbf7d0; color: #16a34a; }
+.tbtn.wa:hover { background: #dcfce7; }
+.tbtn.view { border-color: #c7d2fe; color: #4f46e5; background: #eef2ff; }
+.tbtn.view:hover { background: #e0e7ff; }
+.tbtn.copied { border-color: #4ade80; color: #16a34a; background: #dcfce7; }
+
+.empty { text-align: center; padding: 40px; color: #94a3b8; }
+.empty .ico { font-size: 36px; margin-bottom: 8px; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+.sidebar::-webkit-scrollbar-thumb { background: #475569; }
+</style>
+</head>
+<body>
+<div id="pw-gate">
+  <h1>LEAD <span>HQ</span></h1>
+  <input id="pw-input" type="password" placeholder="Mot de passe…" autocomplete="off"/>
+  <div id="pw-err"></div>
+  <button id="pw-btn">Accéder →</button>
+</div>
+<aside class="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">LEAD <span>HQ</span></div>
+    <div class="sb-date" id="sb-date"></div>
+    <div class="sb-stats">
+      <div class="stat-chip"><strong id="s-total">—</strong>Leads</div>
+      <div class="stat-chip"><strong id="s-warm">—</strong>Active</div>
+      <div class="stat-chip"><strong id="s-pri">—</strong>Priority</div>
+      <div class="stat-chip"><strong id="s-done">0</strong>Done</div>
+    </div>
+  </div>
+
+  <!-- VIEW TOGGLE -->
+  <div class="view-toggle">
+    <div class="vtab active" id="vt-leads" onclick="setView('leads')">📋 Leads</div>
+    <div class="vtab" id="vt-tasks" onclick="setView('tasks')">✅ Tasks</div>
+    <div class="vtab" id="vt-tomorrow" onclick="setView('tomorrow')">📅 Tomorrow</div>
+  </div>
+
+  <!-- LEADS SIDEBAR (shown in leads view) -->
+  <div id="leads-sidebar">
+    <div class="sb-section"><div class="sb-label">Niches</div>
+      <div class="nav-item active" data-niche="all" onclick="setNiche('all')"><span class="icon">🌍</span><span class="lbl">All Niches</span><span class="cnt" id="cnt-all">0</span></div>
+      <div class="nav-item" data-niche="riads" onclick="setNiche('riads')"><span class="icon">🏰</span><span class="lbl">Riads</span><span class="cnt" id="cnt-riads">0</span></div>
+      <div class="nav-item" data-niche="hotel" onclick="setNiche('hotel')"><span class="icon">🏨</span><span class="lbl">Hotel</span><span class="cnt" id="cnt-hotel">0</span></div>
+      <div class="nav-item" data-niche="tourism" onclick="setNiche('tourism')"><span class="icon">🎈</span><span class="lbl">Tourism</span><span class="cnt" id="cnt-tourism">0</span></div>
+      <div class="nav-item" data-niche="medical" onclick="setNiche('medical')"><span class="icon">🏥</span><span class="lbl">Medical</span><span class="cnt" id="cnt-medical">0</span></div>
+      <div class="nav-item" data-niche="retail" onclick="setNiche('retail')"><span class="icon">🛍️</span><span class="lbl">Retail</span><span class="cnt" id="cnt-retail">0</span></div>
+    </div>
+    <div class="sb-section"><div class="sb-label">Status</div>
+      <div class="filter-btn active" data-status="all" onclick="setStatus('all')"><div class="dot" style="background:#94a3b8"></div>All Statuses</div>
+      <div class="filter-btn" data-status="interested" onclick="setStatus('interested')"><div class="dot" style="background:#16a34a"></div>Interested ✅</div>
+      <div class="filter-btn" data-status="following" onclick="setStatus('following')"><div class="dot" style="background:#d97706"></div>Following Up ⏳</div>
+      <div class="filter-btn" data-status="dead" onclick="setStatus('dead')"><div class="dot" style="background:#dc2626"></div>Dead ❌</div>
+    </div>
+    <div class="sb-section"><div class="sb-label">Contact Type</div>
+      <div class="filter-btn active" data-contact="all" onclick="setContact('all')">📋 All Types</div>
+      <div class="filter-btn" data-contact="Call" onclick="setContact('Call')">📞 Call</div>
+      <div class="filter-btn" data-contact="In-person" onclick="setContact('In-person')">🚶 In-person</div>
+    </div>
+  </div>
+
+  <!-- TASKS SIDEBAR (shown in tasks view) -->
+  <div id="tasks-sidebar" style="display:none">
+    <div class="sb-section"><div class="sb-label">Task Types</div>
+      <div class="filter-btn active" data-ttype="all" onclick="setTaskType('all')"><span>📋</span> All Tasks</div>
+      <div class="filter-btn" data-ttype="priority" onclick="setTaskType('priority')"><span>🔴</span> Priority</div>
+      <div class="filter-btn" data-ttype="call" onclick="setTaskType('call')"><span>📞</span> Calls</div>
+      <div class="filter-btn" data-ttype="whatsapp" onclick="setTaskType('whatsapp')"><span>💬</span> WhatsApp</div>
+      <div class="filter-btn" data-ttype="email" onclick="setTaskType('email')"><span>📧</span> Email</div>
+      <div class="filter-btn" data-ttype="visit" onclick="setTaskType('visit')"><span>🚶</span> Visits</div>
+      <div class="filter-btn" data-ttype="wait" onclick="setTaskType('wait')"><span>⏳</span> Waiting</div>
+    </div>
+    <div class="sb-section" style="margin-top:8px"><div class="sb-label">Options</div>
+      <div class="filter-btn" onclick="clearDone()" style="color:#ef4444">🗑️ Clear done</div>
+      <div class="filter-btn" onclick="checkAll()" style="color:#16a34a">✅ Check all visible</div>
+    </div>
+  </div>
+
+  <div id="tomorrow-sidebar" style="display:none;padding:10px 0;">
+    <div id="tomorrow-content"></div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Cold Calling Dashboard <span class="topbar-sub" id="topbar-sub"></span></div>
+    <div class="search-wrap"><span class="search-ico">🔍</span><input class="search-input" id="search" placeholder="Search agency or name…" oninput="render()"></div>
+  </div>
+  <div class="content" id="content"></div>
+</main>
+
+<script>
+const LEADS=[{"name": "Mohammed", "agency": "Riad Ziyat", "website": "Unknown", "websiteStatus": "Unknown", "number": "0644335794", "whatsapp": "https://wa.me/212644335794", "role": "Owner", "language": "Unknown", "niche": "riads", "contactType": "Call", "status": "interested", "nextAction": "Await DM. If no contact by Jun 19 follow up", "callDate": "19 June 2026", "notes": "Meeting held Jun 9. Interested. Waiting for boss approval before confirming shoot date.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "wait", "id": 1}, {"name": "Mme Fatimezahra", "agency": "Riad Assala", "website": "Unknown", "websiteStatus": "Average", "number": "0608113243", "whatsapp": "https://wa.me/212608113243", "role": "Staff", "language": "French / Arabic", "niche": "riads", "contactType": "WhatsApp", "status": "dead", "nextAction": "No follow up planned", "callDate": "Unknown", "notes": "Had shown strong enthusiasm on call Jun 13. Replied via WA Jun 18 — not ready at this time. Closed politely.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": null, "id": 2}, {"name": "Lotfi", "agency": "Riad Nessma", "website": "None", "websiteStatus": "None", "number": "0661483858", "whatsapp": "https://wa.me/212661483858", "role": "Unknown", "language": "French / Arabic", "niche": "riads", "contactType": "Call", "status": "interested", "nextAction": "Await reply to confirm meeting", "callDate": "16 June 2026", "notes": "Very interested. WA sent with video reference. Follow up WA sent Jun 15. City: Fes.", "pitchAngle": "Zero online presence -- competitors are taking your bookings.", "priority": false, "taskType": "wait", "id": 3}, {"name": "Sara Squalli", "agency": "Riad Al Makan", "website": "riadalmakanfes.com", "websiteStatus": "Online", "number": "0664978898", "whatsapp": "https://wa.me/212664978898", "role": "Marketing Contact", "language": "French / Arabic", "niche": "riads", "contactType": "Email", "status": "interested", "nextAction": "Await Sara reply with meeting availability", "callDate": "16 June 2026", "notes": "Sara asked about business model. Replied transparently. Pushing for in-person meeting. Email: riadalmakan@gmail.com", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "wait", "id": 4}, {"name": "Salem Zarougui", "agency": "Riad Semlalia Fes", "website": "Unknown", "websiteStatus": "Live", "number": "0666856410", "whatsapp": "https://wa.me/212666856410", "role": "Marketing Responsible", "language": "French", "niche": "riads", "contactType": "WhatsApp", "status": "interested", "nextAction": "Follow up Jul 5 when Salem back from the US", "callDate": "05 July 2026", "notes": "Salem at FIFA World Cup in the US. Very interested. Calendar reminder set for Jul 5.", "pitchAngle": "Has presence but losing to OTAs. Pitch: direct booking = less commission, more margin.", "priority": false, "taskType": "call", "id": 5}, {"name": "Reda", "agency": "Palais de Fes", "website": "palais-de-fes.com", "websiteStatus": "Average", "number": "0661643996", "whatsapp": "https://wa.me/212661643996", "role": "Manager", "language": "Arabic / French", "niche": "riads", "contactType": "Call", "status": "following", "nextAction": "Await response or close", "callDate": "16 June 2026", "notes": "Has social media manager. WA follow up sent. Email: reservations@palais-de-fes.com", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "wait", "id": 6}, {"name": "Iman Benani", "agency": "Karawan Riad", "website": "karawanriad.com", "websiteStatus": "Live", "number": "0614701345", "whatsapp": "https://wa.me/212614701345", "role": "Manager", "language": "French / Arabic", "niche": "riads", "contactType": "Call", "status": "dead", "nextAction": "No follow up planned. Has social media manager, targets international clients only.", "callDate": "Unknown", "notes": "Called Jun 23. Very dismissive. Has social media manager. Exclusively targets international clients. Closed permanently.", "pitchAngle": "Has presence but losing to OTAs. Pitch: direct booking = less commission, more margin.", "priority": false, "taskType": null, "id": 7}, {"name": "Hussein", "agency": "Le Jardin des Biehn", "website": "jardindesbiehn.com", "websiteStatus": "Good", "number": "0664647679", "whatsapp": "https://wa.me/212664647679", "role": "Receptionist", "language": "French / Arabic", "niche": "riads", "contactType": "Call", "status": "following", "nextAction": "Call to reach manager", "callDate": "16 June 2026", "notes": "Manager not available multiple times. Keep trying.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "call", "id": 8}, {"name": "Unknown", "agency": "Dar Dretache", "website": "Unknown", "websiteStatus": "None", "number": "0535534808", "whatsapp": "https://wa.me/212535534808", "role": "Receptionist", "language": "French / Arabic", "niche": "riads", "contactType": "Call", "status": "following", "nextAction": "Call back Jul 1 with Google Maps 4.4 stars plus content creation pitch", "callDate": "01 July 2026", "notes": "Management on vacation back Jul 1. No website. City: Meknes.", "pitchAngle": "Zero online presence -- competitors are taking your bookings.", "priority": false, "taskType": "call", "id": 9}, {"name": "Unknown", "agency": "Riad Fes Arabia", "website": "None", "websiteStatus": "None", "number": "0661202010", "whatsapp": "https://wa.me/212661202010", "role": "Receptionist", "language": "French / Arabic", "niche": "riads", "contactType": "Call", "status": "following", "nextAction": "Call back Jun 16 if no callback", "callDate": "16 June 2026", "notes": "Receptionist said manager busy. They will call back. No website. City: Fes.", "pitchAngle": "Zero online presence -- competitors are taking your bookings.", "priority": false, "taskType": "call", "id": 10}, {"name": "Richard", "agency": "Riad Tizwa Marrakech & Fes", "website": "riadtizwa.com", "websiteStatus": "Active", "number": "+447973115471", "whatsapp": "https://wa.me/447973115471", "role": "Owner / Management", "language": "English", "niche": "riads", "contactType": "WhatsApp", "status": "following", "nextAction": "Contact Richard once drone authorization is obtained", "callDate": "Unknown", "notes": "Has content team + ground-level shooter. Only interested in drone aerial footage. Richard invited follow up when license is ready. Email: riadtizwam@gmail.com. City: Marrakech & Fes.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "call", "id": 11}, {"name": "Tofik", "agency": "Riad Fes Mahal", "website": "riadfezmahal.com", "websiteStatus": "Average", "number": "0611259402", "whatsapp": "https://wa.me/212611259402", "role": "Owner", "language": "Arabic", "niche": "riads", "contactType": "Call", "status": "dead", "nextAction": "Call back Jun 16-20 with online reputation angle", "callDate": "16 June 2026", "notes": "Soft dead - seasonal objection only. Has social media handler. Try online reputation pitch.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": null, "id": 12}, {"name": "Unknown", "agency": "Riad Alassala Fes", "website": "riadalassalafes.com", "websiteStatus": "Active", "number": "0774191560", "whatsapp": "https://wa.me/212774191560", "role": "Unknown", "language": "French / Arabic", "niche": "riads", "contactType": "Call", "status": "dead", "nextAction": "No follow up planned", "callDate": "Unknown", "notes": "Has community manager and is satisfied. Tried to upsell quality but declined.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": null, "id": 13}, {"name": "Latifa", "agency": "Riad Layla", "website": "riadlayla.com", "websiteStatus": "Online", "number": "0660958608", "whatsapp": "https://wa.me/212660958608", "role": "Receptionist", "language": "French / Arabic", "niche": "riads", "contactType": "Call", "status": "dead", "nextAction": "No follow up planned", "callDate": "Unknown", "notes": "Owner relayed via Latifa on WhatsApp. Hard close on social media content creation.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": null, "id": 14}, {"name": "Unknown", "agency": "Riad and Garden", "website": "riadidrissy.com", "websiteStatus": "Not secure SSL error", "number": "Unknown", "whatsapp": null, "role": "Unknown", "language": "French / Arabic", "niche": "riads", "contactType": "Email", "status": "dead", "nextAction": "No follow up planned", "callDate": "Unknown", "notes": "Phone unreachable. Multiple emails to riadandgarden@gmail.com. No reply. SSL error on website.", "pitchAngle": "No SSL = Google marks site as Not Secure. Tourists see a red warning and leave instantly.", "priority": false, "taskType": null, "id": 15}, {"name": "Rita", "agency": "Riad Laaroussa", "website": "riad-laaroussa.com", "websiteStatus": "Active", "number": "0674187639", "whatsapp": "https://wa.me/212674187639", "role": "Receptionist", "language": "French", "niche": "riads", "contactType": "WhatsApp", "status": "following", "nextAction": "No follow up planned", "callDate": "Unknown", "notes": "Owner never replied despite multiple follow ups and scarcity message. Closed.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "call", "id": 16}, {"name": "Hayat", "agency": "Riad Al Mozyane", "website": "riadalmozyanefes.com", "websiteStatus": "Unknown", "number": "0620258184", "whatsapp": "https://wa.me/212620258184", "role": "Receptionist", "language": "French / Arabic", "niche": "riads", "contactType": "WhatsApp", "status": "following", "nextAction": "No follow up planned", "callDate": "Unknown", "notes": "Multiple emails and WA follow ups. Last chance sent Jun 11. No reply. Closed.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "call", "id": 17}, {"name": "Unknown", "agency": "Riad Yaqout", "website": "Unknown", "websiteStatus": "Active but very bad", "number": "0535533110", "whatsapp": "https://wa.me/212535533110", "role": "Receptionist", "language": "French / Arabic", "niche": "riads", "contactType": "Email", "status": "following", "nextAction": "No follow up planned", "callDate": "Unknown", "notes": "Group structure. Email to riadyacout@hotmail.fr. No reply. Closed. City: Meknes.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "call", "id": 18}, {"name": "Unknown", "agency": "Riad Fellousia", "website": "Unknown", "websiteStatus": "None", "number": "0676987717", "whatsapp": "https://wa.me/212676987717", "role": "Receptionist", "language": "French / Arabic", "niche": "riads", "contactType": "WhatsApp", "status": "dead", "nextAction": "No follow up planned", "callDate": "Unknown", "notes": "Receptionist relayed to owner. No reply. Closed. City: Meknes.", "pitchAngle": "Zero online presence -- competitors are taking your bookings.", "priority": false, "taskType": null, "id": 19}, {"name": "Unknown", "agency": "Riad Le Petit Ksar", "website": "Unknown", "websiteStatus": "Average", "number": "0668932581", "whatsapp": "https://wa.me/212668932581", "role": "Owner / Management", "language": "French / Arabic", "niche": "riads", "contactType": "WhatsApp", "status": "dead", "nextAction": "No follow up planned", "callDate": "Unknown", "notes": "WA proposal sent. No reply. Closed. City: Meknes.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": null, "id": 20}, {"name": "Anas Azhari", "agency": "Unknown (car rental + gold)", "website": "None", "websiteStatus": "None", "number": "0774174031", "whatsapp": "https://wa.me/212774174031", "role": "Owner", "language": "French / Arabic", "niche": "tourism", "contactType": "Call", "status": "interested", "nextAction": "Await decision on package vs performance model", "callDate": "23 June 2026", "notes": "Met in person Jun 21. Pitched two models: monthly package OR performance-based (% of leads). Decision pending. City: Fes.", "pitchAngle": "Zero online presence -- competitors are taking your bookings.", "priority": false, "taskType": "wait", "id": 21}, {"name": "Idrissi Mamoun", "agency": "Sincerite Cars", "website": "Unknown", "websiteStatus": "Average", "number": "0663062808", "whatsapp": "https://wa.me/212663062808", "role": "Owner", "language": "French / Arabic", "niche": "tourism", "contactType": "Call", "status": "following", "nextAction": "Await callback or follow up Jun 16", "callDate": "16 June 2026", "notes": "Owner confident, says best in town. No social media. Considering offer. City: Fes.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "wait", "id": 22}, {"name": "Brahim", "agency": "Ambiance Car", "website": "None", "websiteStatus": "None", "number": "0618071398", "whatsapp": "https://wa.me/212618071398", "role": "Owner", "language": "French / Arabic", "niche": "tourism", "contactType": "Call", "status": "dead", "nextAction": "No follow up. Final offer (performance % model) rejected — no callback received. Closed.", "callDate": "Unknown", "notes": "Jun 22 — Omar gave firm final pitch. No upfront, Kovision takes % of leads generated. Told Brahim this is the last call. No callback received. Closed.", "pitchAngle": "Zero online presence -- competitors are taking your bookings.", "priority": false, "taskType": null, "id": 23}, {"name": "Unknown", "agency": "Morocco Explorer Travel", "website": "moroccoexplorertravel.com", "websiteStatus": "Active", "number": "0616797112", "whatsapp": "https://wa.me/212616797112", "role": "Unknown", "language": "English", "niche": "tourism", "contactType": "WhatsApp", "status": "following", "nextAction": "Await reply. No response in 2 days follow up", "callDate": "17 June 2026", "notes": "Travel agency. Instagram: @moroccoexplorer.travel \u2014 6,093 followers, 432 posts. Email: moroccoexplorertravel@gmail.com. City: Fes.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "wait", "id": 24}, {"name": "Houda Abelasmi", "agency": "HB Luxury Boutique", "website": "None", "websiteStatus": "None", "number": "0642718458", "whatsapp": "https://wa.me/212642718458", "role": "Owner", "language": "French", "niche": "retail", "contactType": "WhatsApp", "status": "following", "nextAction": "Await reply. No response in 2 days follow up", "callDate": "17 June 2026", "notes": "Instagram: @luxury_boutique.hb \u2014 9,020 followers, 97 posts. Women's fashion. Email: houdaabelasmi@gmail.com. City: Meknes.", "pitchAngle": "Zero online presence -- competitors are taking your bookings.", "priority": false, "taskType": "wait", "id": 25}, {"name": "Unknown", "agency": "Ladies Outfits Fes", "website": "None", "websiteStatus": "None", "number": "0699200065", "whatsapp": "https://wa.me/212699200065", "role": "Unknown", "language": "French", "niche": "retail", "contactType": "WhatsApp", "status": "following", "nextAction": "Await reply. No response in 2 days follow up", "callDate": "17 June 2026", "notes": "No answer on call. WA sent Jun 15. Women's fashion. City: Fes.", "pitchAngle": "Zero online presence -- competitors are taking your bookings.", "priority": false, "taskType": "wait", "id": 26}, {"name": "Safa", "agency": "Resort Michlifen", "website": "Unknown", "websiteStatus": "Unknown", "number": "0535864000", "whatsapp": "https://wa.me/212535864000", "role": "Receptionist", "language": "Unknown", "niche": "hotel", "contactType": "Call", "status": "following", "nextAction": "Try again Jun 16 or close", "callDate": "16 June 2026", "notes": "Multiple attempts, no answer. Marketing responsible callback still pending. Instagram active, mediocre content quality.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "call", "id": 27}, {"name": "Asmae Moujahid", "agency": "Palais Medina Fes", "website": "Unknown", "websiteStatus": "Unknown", "number": "0529080104", "whatsapp": "https://wa.me/212529080104", "role": "Sales Team", "language": "French / Arabic", "niche": "hotel", "contactType": "Call / Email", "status": "following", "nextAction": "Await reply from content manager. No response in 2-3 days follow up with Asmae", "callDate": "21 June 2026", "notes": "Called Jun 18. Asmae is not the content decision-maker, refused to share that person's contact. Detailed proposal email sent to amoujahid@hotelatlas.com for internal forwarding. Instagram: @palaismedinafes_officiel \u2014 4,181 followers, only 11 posts. City: Fes.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "wait", "id": 28}, {"name": "Rashid", "agency": "Palais Faraj Suites & Spa", "website": "palaisfaraj.com", "websiteStatus": "Not loading", "number": "0535635356", "whatsapp": "https://wa.me/212535635356", "role": "Commercial Director", "language": "English / French", "niche": "hotel", "contactType": "Call / Email", "status": "following", "nextAction": "Await reply to converting email sent Jun 23 to sales@palaisfaraj.com. No response in 2 days → follow up.", "callDate": "25 June 2026", "notes": "Called Jun 23 — receptionist only. Got Rashid's direct email: sales@palaisfaraj.com. Converting email sent: gap between hotel luxury and content quality vs competitors (Palais de Fes 111K vs their 17K followers). City: Fes.", "pitchAngle": "Palais de Fes has 111K followers. Palais Faraj has 17K. The gap is the pitch.", "priority": false, "taskType": "wait", "id": 29}, {"name": "Mouad Derwi", "agency": "Marriott Jnan Palace Hotel", "website": "Unknown", "websiteStatus": "Average", "number": "0664155863", "whatsapp": "https://wa.me/212664155863", "role": "Sales Manager", "language": "French / Arabic", "niche": "hotel", "contactType": "Call", "status": "following", "nextAction": "Await Mouad reply. No response in 2 days call again", "callDate": "17 June 2026", "notes": "5-star hotel. Content quality doesn't match reputation \u2014 strong pitch angle. Main line: 0535947240. Instagram: @fesmarriottjnanpalace. Portfolio-only WA sent Jun 15. City: Fes.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "wait", "id": 30}, {"name": "Unknown", "agency": "Z Hotel", "website": "zhotel-meknes.com", "websiteStatus": "Unknown", "number": "0535538449", "whatsapp": "https://wa.me/212535538449", "role": "Phone Agent", "language": "Arabic / French", "niche": "hotel", "contactType": "Call", "status": "dead", "nextAction": "No follow up planned", "callDate": "Unknown", "notes": "3 emails sent to sales@zhotel-meknes.com, no reply. Closed. City: Meknes.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": null, "id": 31}, {"name": "Dr. Dina Filali", "agency": "Clinique Al Kawtar", "website": "None", "websiteStatus": "None", "number": "Unknown", "whatsapp": null, "role": "Doctor / Owner", "language": "French", "niche": "medical", "contactType": "Instagram", "status": "following", "nextAction": "No reply Jun 16 follow up via email drdinafla@gmail.com", "callDate": "16 June 2026", "notes": "Previous contact. IG DM sent Jun 10. Email: drdinafla@gmail.com. Instagram: @dr.dinafla. City: Fes.", "pitchAngle": "Zero online presence -- competitors are taking your bookings.", "priority": false, "taskType": "email", "id": 32}, {"name": "Hayat / Director", "agency": "Clinic International Saiss", "website": "Unknown", "websiteStatus": "Average", "number": "0661081858", "whatsapp": "https://wa.me/212661081858", "role": "Receptionist / Director", "language": "French / Arabic", "niche": "medical", "contactType": "Call", "status": "interested", "nextAction": "Await director callback Jun 16", "callDate": "16 June 2026", "notes": "Called Jun 15 at 12PM. Director with patient. Awaiting callback. 11K Instagram followers inactive 5-6 months \u2014 strong pitch angle. City: Meknes.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "wait", "id": 33}, {"name": "Dr. Chairat Amal", "agency": "Cabinet Dentaire Chairat", "website": "Unknown", "websiteStatus": "Unknown", "number": "0661361069", "whatsapp": "https://wa.me/212661361069", "role": "Dermatologist / Owner", "language": "French / Arabic", "niche": "medical", "contactType": "Call", "status": "following", "nextAction": "Await callback Jun 16. No call follow up tomorrow.", "callDate": "16 June 2026", "notes": "Called Jun 15. Busy with schedule. Will call back today or tomorrow. Instagram: @dermalasercasablanca. City: Casablanca.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "wait", "id": 34}, {"name": "Dr. Mernissi Othmane", "agency": "Cabinet Dr. Mernissi Othmane", "website": "None", "websiteStatus": "Offline", "number": "0532074007", "whatsapp": "https://wa.me/212532074007", "role": "Doctor / Owner", "language": "French / Arabic", "niche": "medical", "contactType": "WhatsApp", "status": "following", "nextAction": "Await reply. No response in 2 days follow up", "callDate": "17 June 2026", "notes": "Receptionist asked to contact doctor directly via WA. WA sent to 0663633388. Website offline. City: Meknes.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "wait", "id": 35}, {"name": "Unknown", "agency": "Dental Centre Meknes", "website": "None", "websiteStatus": "Offline", "number": "0535502344", "whatsapp": "https://wa.me/212535502344", "role": "Receptionist", "language": "French / Arabic", "niche": "medical", "contactType": "Call", "status": "following", "nextAction": "If no callback call back Jun 17", "callDate": "17 June 2026", "notes": "Doctor on break Jun 15. Receptionist relayed full proposal. Website offline. City: Meknes.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "call", "id": 36}, {"name": "Dr. Said Zizah", "agency": "Cabinet Dr. Said Zizah", "website": "None", "websiteStatus": "Offline", "number": "0620305456", "whatsapp": "https://wa.me/212620305456", "role": "Orthopedic Surgeon / Owner", "language": "Arabic / French", "niche": "medical", "contactType": "Call", "status": "dead", "nextAction": "No follow up planned. Multiple unanswered calls.", "callDate": "Unknown", "notes": "Instagram: @dr_zizah_said \u2014 28,300 followers, 817 posts. Multiple unanswered calls. Omar decided to skip based on gut feeling. Closed. City: Fes.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": null, "id": 37}, {"name": "Karima", "agency": "Clinique Dentaire Bennani", "website": "maroc-implants.com", "websiteStatus": "Active", "number": "0661437778", "whatsapp": "https://wa.me/212661437778", "role": "Staff", "language": "French", "niche": "medical", "contactType": "WhatsApp", "status": "dead", "nextAction": "No follow up planned", "callDate": "Unknown", "notes": "Just signed with a communication agency. Professional decline, door left open for future. Instagram: @clinique.dentairebennani (16.1K followers). City: Casablanca.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": null, "id": 38}, {"name": "Dr. Mohammed Alami", "agency": "Cabinet Dentaire Alami", "website": "None", "websiteStatus": "Offline", "number": "0661484485", "whatsapp": "https://wa.me/212661484485", "role": "Doctor / Owner", "language": "French / Arabic", "niche": "medical", "contactType": "Call", "status": "client", "nextAction": "🎬 First shoot Saturday Jul 4 at 2PM — collect 1,250 MAD after shoot.", "callDate": "04 July 2026", "notes": "🏆 FIRST PAID CLIENT. Meeting Jun 22 with Omar + Omayma. Package: 4 videos/month + 12 before/after photos/month. 2,500 MAD/month. 50% upfront after shoot, 50% after editing. Shoot rescheduled from Jun 25 → Jul 4 at 2PM.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": true, "taskType": "visit", "id": 39}, {"name": "Unknown", "agency": "Cabinet Dr. Boudraa", "website": "Unknown", "websiteStatus": "Unknown", "number": "0535960082", "whatsapp": "https://wa.me/212535960082", "role": "Doctor / Owner", "language": "French", "niche": "medical", "contactType": "Call", "status": "dead", "nextAction": "No follow up planned. Doctor not ready at this time — door left open.", "callDate": "Unknown", "notes": "Receptionist called back Jun 23. Doctor not ready at this time, may reach out in the future. City: Fes.", "pitchAngle": "Zero online presence -- competitors are taking your bookings.", "priority": false, "taskType": null, "id": 40}, {"name": "Dr. Hajar El Bennaye", "agency": "Cabinet Dermatologie El Bennaye", "website": "Unknown", "websiteStatus": "Unknown", "number": "0667686860", "whatsapp": "https://wa.me/212667686860", "role": "Dermatologist / Owner", "language": "French / Arabic", "niche": "medical", "contactType": "Call", "status": "interested", "nextAction": "🤝 Meeting Saturday Jun 27 at 12PM in Meknes. Call Saturday morning to confirm location.", "callDate": "27 June 2026", "notes": "Called Jun 23. Receptionist confirmed meeting for Jun 27 at 12PM. Location to be confirmed via WA or phone Saturday morning before heading to Meknes. PDF proposal already sent. Calendar event set. City: Meknes.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "visit", "id": 41}, {"name": "Hamza Fakhari", "agency": "Art Naji", "website": "Unknown", "websiteStatus": "Unknown", "number": "Unknown", "whatsapp": null, "role": "Owner / Manager", "language": "Arabic / French", "niche": "retail", "contactType": "Visit", "status": "client", "nextAction": "Await contract from Hamza → sign → send invoice → start Monday Jun 29.", "callDate": "29 June 2026", "notes": "🏆 CLIENT ACTIVE. Confirmed verbally Jun 24. Hamza sends contract first, then Omar sends invoice. Starting Jun 29. Scope: 2 videos/month + 15-30 product photos/month. Price: 3,500–4,000 MAD TTC. Email: hamzafakhari@artnaji.com", "pitchAngle": "Artisan heritage brand — content tells the story of the craft, drives premium buyers.", "priority": true, "taskType": "visit", "id": 42}, {"name": "Dr. Latifa Moussaid", "agency": "Cabinet Dr. Latifa Moussaid", "website": "Unknown", "websiteStatus": "Unknown", "number": "0663230880", "whatsapp": "https://wa.me/212663230880", "role": "Dermatologist / Owner", "language": "French", "niche": "medical", "contactType": "Call", "status": "following", "nextAction": "Await WA reply. No response → follow up Jun 21", "callDate": "21 June 2026", "notes": "No answer on first call Jun 19. WA sent immediately after. Instagram: @docteurlatifamoussaid. City: Casablanca.", "pitchAngle": "Website needs review -- check before the call and tailor the pitch.", "priority": false, "taskType": "wait", "id": 43}, {"name": "Dr. Nada Bennouna", "agency": "Cabinet Dr. Nada Bennouna", "website": "dermatologue-nadabennouna.ma", "websiteStatus": "Active", "number": "0641615535", "whatsapp": "https://wa.me/212641615535", "role": "Dermatologist / Owner", "language": "French", "niche": "medical", "contactType": "WhatsApp", "status": "following", "nextAction": "Await reply to Jun 22 follow up", "callDate": "23 June 2026", "notes": "Dermatologist + aesthetic medicine. 164 Bd d'Anfa, Casablanca. Trained Paris/Besancon/Montpellier. PDF proposal sent Jun 20, she replied will get back to us. Follow up sent Jun 22.", "pitchAngle": "Her content should match the premium quality of her practice.", "priority": false, "taskType": "wait", "id": 44}, {"name": "Dr. Charkani Soukaina", "agency": "Cabinet Dr. Charkani Soukaina", "website": "Unknown", "websiteStatus": "Unknown", "number": "0661294602", "whatsapp": "https://wa.me/212661294602", "role": "Aesthetic Medicine Doctor / Owner", "language": "French", "niche": "medical", "contactType": "WhatsApp", "status": "following", "nextAction": "Await reply. No response in 2 days follow up", "callDate": "20 June 2026", "notes": "Medecine esthetique, anti-age, medical lasers. Instagram: @dr_charkani_soukaina (verified, 2,840 followers). WA sent Jun 18. City: Fes.", "pitchAngle": "Zero online presence -- competitors are taking your bookings.", "priority": false, "taskType": "wait", "id": 45}, {"name": "Chiara & Bruno", "agency": "Beldi Property", "website": "Unknown", "websiteStatus": "Unknown", "number": "+212665383295", "whatsapp": "https://wa.me/212665383295", "role": "Owners", "language": "French", "niche": "real estate", "contactType": "WhatsApp", "status": "dead", "nextAction": "Revisit September 2026", "callDate": "Unknown", "notes": "Already has own content/promotion setup. Polite decline Jun 18. Good candidate to re-approach later.", "pitchAngle": "Real estate — content drives buyer trust and international reach.", "priority": false, "taskType": null, "id": 46}, {"name": "Unknown", "agency": "Cabinet Orthodontie Alaoui", "website": "Unknown", "websiteStatus": "Unknown", "number": "0669580619", "whatsapp": "https://wa.me/212669580619", "role": "Unknown", "language": "French / Arabic", "niche": "medical", "contactType": "Call", "status": "dead", "nextAction": "No follow up planned. Tanger too far for in-person visits.", "callDate": "Unknown", "notes": "Warm lead via Instagram. No answer on call. Tanger too far from base — not worth pursuing remotely. Closed. City: Tanger.", "pitchAngle": "Zero online presence -- competitors are taking your bookings.", "priority": false, "taskType": null, "id": 47}, {"name": "Hind Allam", "agency": "L'agence Premium Estate", "website": "kovisionco.github.io/RealEstate-Portfolio", "websiteStatus": "Active", "number": "0661496757", "whatsapp": "https://wa.me/212661496757", "role": "Owner", "language": "French", "niche": "real estate", "contactType": "Call", "status": "interested", "nextAction": "Await reply to Jun 22 follow up. Call Jun 24 when back. Meeting Jul 1.", "callDate": "24 June 2026", "notes": "Instagram: @lagencepremiumestate — 47,800 followers, 156 posts. Called Jun 19, voice note + 3 min call Jun 20. Portfolio shared. Follow up sent Jun 22. Back in Morocco Jun 24. Calendar set. City: Casablanca.", "pitchAngle": "47K followers — premium reach. Content elevates listings and attracts high-net buyers.", "priority": false, "taskType": "wait", "id": 48}];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let activeNiche='all', activeStatus='all', activeContact='all';
+let activeView='leads', activeTaskType='all';
+const checkedTasks = new Set();
+const collapsedGroups = new Set();
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+function badge(s){
+  if(s==='interested') return '<span class="badge b-int">Interested ✅</span>';
+  if(s==='following') return '<span class="badge b-fol">Following Up ⏳</span>';
+  return '<span class="badge b-dead">Dead ❌</span>';
+}
+function nicheLabel(n){
+  return {riads:'Riads',hotel:'Hotel',tourism:'Tourism',medical:'Medical',retail:'Retail'}[n]||n;
+}
+function copyNum(num,id){
+  navigator.clipboard.writeText(num).then(()=>{
+    const b=document.getElementById(id);
+    if(!b)return;
+    const orig=b.innerHTML; b.innerHTML='✓ Copied!'; b.classList.add('copied');
+    setTimeout(()=>{b.innerHTML=orig;b.classList.remove('copied');},1600);
+  }).catch(()=>{});
+}
+function toggleExpand(id){
+  const el=document.getElementById('exp-'+id);
+  const btn=document.getElementById('ebtn-'+id);
+  if(!el)return;
+  el.classList.toggle('show');
+  if(btn)btn.innerHTML=el.classList.contains('show')?'▲ Less':'▼ More';
+}
+
+// ── TASKS ──────────────────────────────────────────────────────────────────
+function toggleTask(id){
+  if(checkedTasks.has(id)) checkedTasks.delete(id); else checkedTasks.add(id);
+  document.getElementById('s-done').textContent=checkedTasks.size;
+  renderTasks();
+}
+function clearDone(){ checkedTasks.clear(); document.getElementById('s-done').textContent=0; renderTasks(); }
+function checkAll(){
+  getVisibleTaskLeads().forEach(l=>checkedTasks.add(l.id));
+  document.getElementById('s-done').textContent=checkedTasks.size;
+  renderTasks();
+}
+function getVisibleTaskLeads(){
+  const q=(document.getElementById('search')?.value||'').toLowerCase();
+  return LEADS.filter(l=>{
+    if(!l.taskType) return false;
+    if(activeTaskType!=='all'){
+      if(activeTaskType==='priority') return l.priority;
+      if(l.taskType!==activeTaskType) return false;
+    }
+    if(q&&!l.agency.toLowerCase().includes(q)&&!l.name.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+function goToLead(id){
+  setView('leads');
+  const l=LEADS.find(x=>x.id===id);
+  if(l){ setNiche(l.niche); }
+  setTimeout(()=>{
+    const el=document.getElementById('ca-'+id);
+    if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+  },120);
+}
+function toggleGroup(key){
+  if(collapsedGroups.has(key)) collapsedGroups.delete(key); else collapsedGroups.add(key);
+  const body=document.getElementById('tgb-'+key);
+  const tog=document.getElementById('tgt-'+key);
+  if(body) body.classList.toggle('collapsed',collapsedGroups.has(key));
+  if(tog) tog.textContent=collapsedGroups.has(key)?'▶':'▼';
+}
+
+function taskRow(l){
+  const done=checkedTasks.has(l.id);
+  const hasNum=l.number&&l.number!=='Unknown'&&!l.number.startsWith('Fixed')&&!l.number.startsWith('Pending');
+  const numClean=hasNum?l.number.replace(/\s/g,''):'';
+  const cpBtn=hasNum?`<button class="tbtn" id="tcp-${l.id}" onclick="copyNum('${numClean}','tcp-${l.id}')">📋 ${l.number}</button>`:'';
+  const waBtn=l.whatsapp?`<a class="tbtn wa" href="${l.whatsapp}" target="_blank">💬 WA</a>`:'';
+  const viewBtn=`<button class="tbtn view" onclick="goToLead(${l.id})">→ View</button>`;
+  return `<div class="task-row${done?' done':''}${l.priority?' is-priority':''}" id="trow-${l.id}">
+    <div class="task-cb${done?' checked':''}" onclick="toggleTask(${l.id})"></div>
+    <div class="task-info">
+      <div class="task-agency">${l.priority?'<span class="pri-tag">NOW</span>':''}${l.agency}${l.name&&l.name!=='Unknown'?` <span style="font-weight:400;color:#64748b">· ${l.name}</span>`:''}${l.language&&l.language!=='Unknown'?` <span style="font-size:10px;color:#94a3b8">(${l.language})</span>`:''}</div>
+      <div class="task-action">⚡ ${l.nextAction}</div>
+    </div>
+    <div class="task-btns">${cpBtn}${waBtn}${viewBtn}</div>
+  </div>`;
+}
+
+function renderTasks(){
+  const groups=[
+    {key:'priority',icon:'🔴',label:'Priority — Act Now',filter:l=>l.priority},
+    {key:'call',icon:'📞',label:'Calls to Make',filter:l=>!l.priority&&l.taskType==='call'},
+    {key:'whatsapp',icon:'💬',label:'WhatsApp to Send',filter:l=>!l.priority&&l.taskType==='whatsapp'},
+    {key:'email',icon:'📧',label:'Emails to Send',filter:l=>!l.priority&&l.taskType==='email'},
+    {key:'visit',icon:'🚶',label:'Visits Planned',filter:l=>!l.priority&&l.taskType==='visit'},
+    {key:'wait',icon:'⏳',label:'Waiting on Them',filter:l=>!l.priority&&l.taskType==='wait'},
+  ];
+  const q=(document.getElementById('search')?.value||'').toLowerCase();
+  const allTaskLeads=LEADS.filter(l=>l.taskType);
+  const total=allTaskLeads.length;
+  const done=allTaskLeads.filter(l=>checkedTasks.has(l.id)).length;
+  const pct=total?Math.round(done/total*100):0;
+
+  const cCall=allTaskLeads.filter(l=>l.taskType==='call').length;
+  const cWA=allTaskLeads.filter(l=>l.taskType==='whatsapp').length;
+  const cEmail=allTaskLeads.filter(l=>l.taskType==='email').length;
+  const cVisit=allTaskLeads.filter(l=>l.taskType==='visit').length;
+  const cWait=allTaskLeads.filter(l=>l.taskType==='wait').length;
+  const cPri=allTaskLeads.filter(l=>l.priority).length;
+
+  let html=`<div class="tasks-view">
+  <div class="progress-card">
+    <div class="progress-top">
+      <div class="progress-title">📋 Follow-up Session</div>
+      <div class="progress-count">${done} / ${total} done${pct>0?' ('+pct+'%)':''}</div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+    <div class="progress-pills">
+      <div class="prog-pill">🔴 Priority <span>${cPri}</span></div>
+      <div class="prog-pill">📞 Calls <span>${cCall}</span></div>
+      <div class="prog-pill">💬 WhatsApp <span>${cWA}</span></div>
+      <div class="prog-pill">📧 Email <span>${cEmail}</span></div>
+      <div class="prog-pill">🚶 Visit <span>${cVisit}</span></div>
+      <div class="prog-pill">⏳ Waiting <span>${cWait}</span></div>
+    </div>
+  </div>`;
+
+  groups.forEach(g=>{
+    const show=activeTaskType==='all'||(activeTaskType==='priority'&&g.key==='priority')||(activeTaskType!=='priority'&&g.key===activeTaskType);
+    if(!show) return;
+    let items=allTaskLeads.filter(g.filter);
+    if(q) items=items.filter(l=>l.agency.toLowerCase().includes(q)||l.name.toLowerCase().includes(q));
+    if(!items.length) return;
+    const doneInGroup=items.filter(l=>checkedTasks.has(l.id)).length;
+    const collapsed=collapsedGroups.has(g.key);
+    html+=`<div class="task-group">
+      <div class="tg-header" onclick="toggleGroup('${g.key}')">
+        <span class="tg-icon">${g.icon}</span>
+        <span class="tg-label">${g.label}</span>
+        <span class="tg-done-cnt">${doneInGroup}/${items.length}</span>
+        <span class="cnt-badge">${items.length}</span>
+        <span class="tg-toggle" id="tgt-${g.key}">${collapsed?'▶':'▼'}</span>
+      </div>
+      <div class="tg-body${collapsed?' collapsed':''}" id="tgb-${g.key}">
+        ${items.map(l=>taskRow(l)).join('')}
+      </div>
+    </div>`;
+  });
+  html+='</div>';
+  document.getElementById('content').innerHTML=html;
+  document.getElementById('topbar-title').innerHTML='Follow-up Tasks <span class="topbar-sub">'+done+' / '+total+' completed</span>';
+}
+
+// ── LEADS ──────────────────────────────────────────────────────────────────
+function renderCard(l){
+  const hasNum=l.number&&l.number!=='Unknown'&&!l.number.startsWith('Fixed')&&!l.number.startsWith('Pending');
+  const numClean=hasNum?l.number.replace(/\s/g,''):'';
+  const numSection=hasNum
+    ?`<div class="num-display">${l.number}</div><button class="btn" id="cp-${l.id}" onclick="event.stopPropagation();copyNum('${numClean}','cp-${l.id}')">📋 Copy</button>`
+    :`<span class="no-num">📵 No number yet</span>`;
+  const waBtn=l.whatsapp
+    ?`<a class="btn wa" href="${l.whatsapp}" target="_blank" onclick="event.stopPropagation()">💬 WhatsApp</a>`
+    :`<span class="btn" style="opacity:.35;cursor:default">💬 No WA</span>`;
+  return `<div class="lead-card${l.priority?' hot':''}" onclick="toggleExpand(${l.id})">
+    <div class="card-top">
+      <div class="card-agency">${l.agency}</div>
+      <div class="badges">${l.priority?'<span class="badge b-now">🔴 NOW</span>':''}${badge(l.status)}<span class="badge b-niche">${nicheLabel(l.niche)}</span></div>
+    </div>
+    <div class="card-meta"><span>👤 ${l.name}</span>${l.language!=='Unknown'?`<span>🗣️ ${l.language}</span>`:''}<span>📍 ${l.contactType}</span></div>
+    <div class="next-box">⚡ ${l.nextAction}</div>
+    <div class="card-actions">${numSection}${waBtn}<button class="btn expand" id="ebtn-${l.id}" onclick="event.stopPropagation();toggleExpand(${l.id})">▼ More</button></div>
+    <div class="expanded" id="exp-${l.id}">
+      <div class="detail-grid">
+        <div><div class="d-label">Role</div><div class="d-val">${l.role}</div></div>
+        <div><div class="d-label">Last Contact</div><div class="d-val">${l.callDate}</div></div>
+        <div><div class="d-label">Contact Type</div><div class="d-val">${l.contactType}</div></div>
+        <div><div class="d-label">Language</div><div class="d-val">${l.language}</div></div>
+        ${l.website!=='Unknown'&&l.website!=='None'?`<div style="grid-column:span 2"><div class="d-label">Website</div><div class="d-val">${l.website}</div></div>`:''}
+      </div>
+      <div class="ws-box"><b>Website Status</b>${l.websiteStatus}</div>
+      <div class="pitch-box"><b>🎯 Pitch Angle</b>${l.pitchAngle}</div>
+      <div class="notes-box"><b>📝 Notes</b>${l.notes}</div>
+    </div>
+  </div>`;
+}
+
+function getFiltered(){
+  const q=(document.getElementById('search')?.value||'').toLowerCase();
+  return LEADS.filter(l=>{
+    if(activeNiche!=='all'&&l.niche!==activeNiche)return false;
+    if(activeStatus!=='all'&&l.status!==activeStatus)return false;
+    if(activeContact!=='all'){const ct=l.contactType.toLowerCase();if(activeContact==='Call'&&!ct.includes('call'))return false;if(activeContact==='In-person'&&!ct.includes('in-person'))return false;}
+    if(q&&!l.agency.toLowerCase().includes(q)&&!l.name.toLowerCase().includes(q)&&!l.nextAction.toLowerCase().includes(q))return false;
+    return true;
+  });
+}
+
+function renderLeads(){
+  const filtered=getFiltered();
+  const priorities=LEADS.filter(l=>l.priority);
+  document.getElementById('cnt-all').textContent=LEADS.length;
+  ['riads','hotel','tourism','medical','retail'].forEach(n=>{const el=document.getElementById('cnt-'+n);if(el)el.textContent=LEADS.filter(l=>l.niche===n).length;});
+  document.getElementById('topbar-title').innerHTML='Cold Calling Dashboard <span class="topbar-sub" id="topbar-sub">'+filtered.length+' lead'+(filtered.length!==1?'s':'')+' shown</span>';
+
+  let html='';
+  if(priorities.length>0&&activeStatus!=='dead'){
+    html+=`<div class="priority-section"><div class="priority-header"><span>🔴</span><h3>PRIORITY TODAY — ${priorities.length} overdue or due now</h3></div><div class="priority-chips">${priorities.map(l=>`<div class="p-chip" onclick="document.getElementById('ca-${l.id}')?.scrollIntoView({behavior:'smooth'})"><strong>${l.agency}</strong> — ${l.nextAction.substring(0,55)}${l.nextAction.length>55?'…':''}</div>`).join('')}</div></div>`;
+  }
+  const niches=['riads','hotel','tourism','medical','retail'];
+  const icons={riads:'🏰',hotel:'🏨',tourism:'🎈',medical:'🏥',retail:'🛍️'};
+  const labels={riads:'Riads',hotel:'Hotel',tourism:'Tourism',medical:'Medical',retail:'Retail'};
+  if(activeNiche==='all'){
+    niches.forEach(n=>{
+      const nl=filtered.filter(l=>l.niche===n);
+      if(!nl.length)return;
+      html+=`<div class="section-header"><div class="section-title">${icons[n]} ${labels[n]}</div><div class="cnt-badge">${nl.length}</div></div><div class="leads-grid">${nl.map(l=>`<div id="ca-${l.id}">${renderCard(l)}</div>`).join('')}</div>`;
+    });
+  } else {
+    if(!filtered.length){html+=`<div class="empty"><div class="ico">🔍</div><p>No leads match your filters.</p></div>`;}
+    else{html+=`<div class="leads-grid">${filtered.map(l=>`<div id="ca-${l.id}">${renderCard(l)}</div>`).join('')}</div>`;}
+  }
+  document.getElementById('content').innerHTML=html;
+}
+
+
+var TOMORROW_TASKS_DATA = [{"type": "call", "lead": "Art Naji — Hamza Fakhari (CLIENT ✅)", "contact": "hamzafakhari@artnaji.com", "note": "🎯 Await contract from Hamza. Once received: sign + send invoice. Start date: Monday Jun 29.", "time": "AM"}, {"type": "call", "lead": "Hind Allam — Premium Estate", "contact": "0661496757", "note": "Confirm Jul 1 meeting. She's been back since Jun 24 — lock in the meeting.", "time": "AM"}, {"type": "call", "lead": "Dr. Latifa Moussaid", "contact": "0663230880", "note": "Still no reply. Follow up call if no response.", "time": "AM"}, {"type": "wait", "lead": "Anas Azhari", "contact": "0774174031", "note": "Still awaiting decision: package vs % model. Check in if no reply today.", "time": "AM"}, {"type": "wait", "lead": "Rashid — Palais Faraj", "contact": "sales@palaisfaraj.com", "note": "Converting email sent Jun 23. Await reply — no push yet.", "time": "PM"}, {"type": "wait", "lead": "Dr. Nada Bennouna", "contact": "0641615535 — Casablanca", "note": "Follow up sent Jun 22. Await reply.", "time": "PM"}, {"type": "visit", "lead": "⚠️ Dr. Hajar El Bennaye — Meknes TOMORROW", "contact": "0667686860", "note": "Meeting TOMORROW Sat Jun 27 at 12PM. Call first thing Saturday morning to confirm exact location before leaving for Meknes.", "time": "PM"}, {"type": "visit", "lead": "🎬 Dr. Alami — Shoot Jul 4 at 2PM", "contact": "0661484485", "note": "Rescheduled. Next shoot: Saturday Jul 4 at 2PM. Collect 1,250 MAD after shoot.", "time": "PM"}];
+
+function renderTomorrow(){
+  var tmrTypeIcon = {call:"☎️",whatsapp:"💬",visit:"🚶",email:"📧",wait:"⏳"};
+  var tmrBorderColor = {call:"#3b82f6",whatsapp:"#22c55e",visit:"#f59e0b",email:"#6366f1",wait:"#94a3b8"};
+  var content = document.getElementById("tomorrow-content");
+  if(!content) return;
+  var h = "<div style=\"padding:10px 0 14px;\">"
+        + "<div style=\"font-size:16px;font-weight:800;color:#f8fafc;margin-bottom:4px;\">📅 Friday 26 June 2026</div>"
+        + "<div style=\"font-size:12px;color:#94a3b8;\">" + TOMORROW_TASKS_DATA.length + " actions planned</div>"
+        + "</div>";
+  var amTasks = TOMORROW_TASKS_DATA.filter(function(t){return t.time==="AM";});
+  var pmTasks = TOMORROW_TASKS_DATA.filter(function(t){return t.time==="PM";});
+  function renderGroup(label, tasks){
+    var s = "<div style=\"font-size:11px;font-weight:700;color:#64748b;letter-spacing:.08em;margin:12px 0 6px;\">" + label + "</div>";
+    for(var i=0;i<tasks.length;i++){
+      var t = tasks[i];
+      var ic = tmrTypeIcon[t.type] || "📋";
+      var bc = tmrBorderColor[t.type] || "#64748b";
+      s += "<div style=\"background:#1e293b;border-left:3px solid " + bc + ";border-radius:6px;padding:10px 12px;margin-bottom:8px;\">"
+         + "<div style=\"font-size:13px;font-weight:700;color:#f1f5f9;margin-bottom:2px;\">" + ic + " " + t.lead + "</div>"
+         + "<div style=\"font-size:11px;color:#94a3b8;margin-bottom:4px;\">" + t.contact + "</div>"
+         + "<div style=\"font-size:11px;color:#cbd5e1;\">" + t.note + "</div>"
+         + "</div>";
+    }
+    return s;
+  }
+  h += renderGroup("MORNING", amTasks);
+  h += renderGroup("AFTERNOON", pmTasks);
+  content.innerHTML = h;
+}
+
+// ── MASTER RENDER ──────────────────────────────────────────────────────────
+function render(){
+  if(activeView==='tasks') renderTasks();
+  else renderLeads();
+}
+
+// ── SETTERS ────────────────────────────────────────────────────────────────
+function setView(v){
+  activeView=v;
+  document.getElementById('vt-leads').classList.toggle('active',v==='leads');
+  document.getElementById('vt-tasks').classList.toggle('active',v==='tasks');
+  document.getElementById('vt-tomorrow').classList.toggle('active',v==='tomorrow');
+  document.getElementById('leads-sidebar').style.display=v==='leads'?'block':'none';
+  document.getElementById('tasks-sidebar').style.display=v==='tasks'?'block':'none';
+  document.getElementById('tomorrow-sidebar').style.display=v==='tomorrow'?'block':'none';
+  if(v==='leads'){document.getElementById('search').placeholder='Search agency or name…';}
+  else{document.getElementById('search').placeholder='Search tasks…';}
+  render();
+
+  if(activeView==='tomorrow'){renderTomorrow();return;}
+}
+function setNiche(n){activeNiche=n;document.querySelectorAll('[data-niche]').forEach(el=>el.classList.toggle('active',el.dataset.niche===n));render();}
+function setStatus(s){activeStatus=s;document.querySelectorAll('[data-status]').forEach(el=>el.classList.toggle('active',el.dataset.status===s));render();}
+function setContact(c){activeContact=c;document.querySelectorAll('[data-contact]').forEach(el=>el.classList.toggle('active',el.dataset.contact===c));render();}
+function setTaskType(t){activeTaskType=t;document.querySelectorAll('[data-ttype]').forEach(el=>el.classList.toggle('active',el.dataset.ttype===t));render();}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+document.getElementById('sb-date').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+document.getElementById('s-total').textContent=LEADS.length;
+document.getElementById('s-warm').textContent=LEADS.filter(l=>l.status!=='dead').length;
+document.getElementById('s-pri').textContent=LEADS.filter(l=>l.priority).length;
+render();
+</script>
+</body>
+</html>
+                 
